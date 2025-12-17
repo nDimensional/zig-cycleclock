@@ -49,21 +49,21 @@ pub const KPerf = struct {
 
     const Symbols = struct {
         /// Get running PMC classes.
-        kpc_get_counting: *fn () callconv(.C) ClassMask,
+        kpc_get_counting: *fn () callconv(.c) ClassMask,
         /// Set PMC classes to enable counting. Returns zero for success.
-        kpc_set_counting: *fn (ClassMask) callconv(.C) c_int,
+        kpc_set_counting: *fn (ClassMask) callconv(.c) c_int,
         /// Get thread PMC classes for the current thread.
-        kpc_get_thread_counting: *fn () callconv(.C) ClassMask,
+        kpc_get_thread_counting: *fn () callconv(.c) ClassMask,
         /// Set PMC classes to enable counting for current thread. Returns zero for success.
-        kpc_set_thread_counting: *fn (ClassMask) callconv(.C) c_int,
+        kpc_set_thread_counting: *fn (ClassMask) callconv(.c) c_int,
         /// Get counter accumulations for current thread.
-        kpc_get_thread_counters: *fn (thread_id: u32, buffer_count: u32, buffers: [*]u64) callconv(.C) c_int,
+        kpc_get_thread_counters: *fn (thread_id: u32, buffer_count: u32, buffers: [*]u64) callconv(.c) c_int,
         /// Get how many counters there are for a given mask.
-        kpc_get_counter_count: *fn (ClassMask) callconv(.C) u32,
+        kpc_get_counter_count: *fn (ClassMask) callconv(.c) u32,
         /// Get how many config registers there are for a given mask.
-        kpc_get_config_count: *fn (ClassMask) callconv(.C) u32,
+        kpc_get_config_count: *fn (ClassMask) callconv(.c) u32,
         /// Set config registers.
-        kpc_set_config: *fn (ClassMask, Config) callconv(.C) c_int,
+        kpc_set_config: *fn (ClassMask, Config) callconv(.c) c_int,
         /// Acquire/release the counters used by the Power Manager.
         kpc_force_all_ctrs_set: *fn (c_int) c_int,
     };
@@ -73,18 +73,17 @@ pub const KPerf = struct {
             return _instance.?;
         }
 
-        const RTLD_LAZY = 0x1;
         const handle: *anyopaque = std.c.dlopen(
             "/System/Library/PrivateFrameworks/kperf.framework/kperf",
-            RTLD_LAZY,
+            .{ .LAZY = true },
         ) orelse return error.FailedToLoadKPerf;
 
         var symbols: Symbols = undefined;
 
-        const info = @typeInfo(Symbols).Struct;
+        const info = @typeInfo(Symbols).@"struct";
         inline for (info.fields) |f| {
             const sym: *anyopaque = std.c.dlsym(handle, f.name) orelse return error.FailedToLoadKPerf;
-            @field(symbols, f.name) = @alignCast(@ptrCast(sym));
+            @field(symbols, f.name) = @ptrCast(@alignCast(sym));
         }
 
         if (symbols.kpc_get_counter_count(KPC_MASK) != COUNTERS_COUNT) {

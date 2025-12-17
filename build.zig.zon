@@ -1,5 +1,6 @@
 .{
-    .name = "zig-cycleclock",
+    .name = .cycleclock,
+    .fingerprint = 0xb748f42469946596,
     .version = "0.0.1",
 
     // Specifies the set of files and directories that are included in this package.
@@ -12,7 +13,5 @@
         "build.zig",
         "build.zig.zon",
         "src",
-        "README.md",
-        "LICENSE",
     },
 }

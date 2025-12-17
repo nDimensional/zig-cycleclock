@@ -6,7 +6,8 @@ pub inline fn now() u64 {
     const os: std.Target.Os = builtin.os;
 
     if (comptime os.tag.isDarwin()) {
-        const kperf = @import("./kperf.zig").KPerf.instance() catch @panic("Cannot setup KPerf");
+        const kperf = @import("kperf.zig").KPerf.instance() catch
+            @panic("Cannot setup KPerf");
         return kperf.get_counter() catch 0;
     }
 
